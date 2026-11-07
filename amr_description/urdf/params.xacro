@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+  Parámetros geométricos del Mobile Manipulator.
+  Valores marcados TBD son provisionales: sustituir con las medidas reales
+  (o con el export de SolidWorks) sin cambiar los nombres de frames.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ===================== Base omnidireccional (X a 45 deg) ===================== -->
+  <xacro:property name="base_length" value="0.40"/>          <!-- TBD -->
+  <xacro:property name="base_width" value="0.40"/>           <!-- TBD -->
+  <xacro:property name="base_height" value="0.12"/>          <!-- TBD -->
+  <xacro:property name="base_mass" value="12.0"/>            <!-- TBD -->
+  <xacro:property name="wheel_radius" value="0.050"/>        <!-- TBD: radio rueda omni -->
+  <xacro:property name="wheel_width" value="0.040"/>         <!-- TBD -->
+  <xacro:property name="wheel_mass" value="0.40"/>           <!-- TBD -->
+  <!-- Distancia centro del robot -> centro de rueda (L de la cinemática). TBD -->
+  <xacro:property name="wheel_center_distance" value="0.25"/>
+  <!-- Ángulo de cada rueda alrededor del centro (X config). Debe coincidir con
+       AMR_LLC/ros2/amr_mqtt_bridge/config/bridge.yaml (wheel_angles_deg). -->
+  <xacro:property name="wheel_angle_fl" value="${radians(45)}"/>
+  <xacro:property name="wheel_angle_rl" value="${radians(135)}"/>
+  <xacro:property name="wheel_angle_rr" value="${radians(225)}"/>
+  <xacro:property name="wheel_angle_fr" value="${radians(315)}"/>
+
+  <!-- ===================== Sensores ===================== -->
+  <!-- RPLIDAR A1M8 -->
+  <xacro:property name="lidar_x" value="0.15"/>              <!-- TBD -->
+  <xacro:property name="lidar_y" value="0.0"/>
+  <xacro:property name="lidar_z" value="${base_height + 0.06}"/>  <!-- TBD, sobre base_link -->
+  <!-- BNO080 -->
+  <xacro:property name="imu_x" value="0.0"/>                 <!-- TBD -->
+  <xacro:property name="imu_y" value="0.0"/>
+  <xacro:property name="imu_z" value="0.03"/>
+
+  <!-- ===================== Brazo 4 DOF (tabla DH de AMR_arm/README.md) ===================== -->
+  <xacro:property name="arm_l1" value="${0.031 + 0.03885}"/>
+  <xacro:property name="arm_l2" value="0.4"/>
+  <xacro:property name="arm_l3" value="0.095"/>
+  <xacro:property name="arm_l4" value="0.245"/>
+  <xacro:property name="arm_l5" value="0.050"/>
+  <xacro:property name="arm_C" value="${sqrt(arm_l3**2 + arm_l4**2)}"/>
+  <xacro:property name="arm_phi" value="${acos(arm_l4 / arm_C)}"/>
+  <xacro:property name="arm_gamma" value="${pi + arm_phi}"/>
+  <!-- Montaje del brazo sobre la base. TBD -->
+  <xacro:property name="arm_mount_x" value="0.08"/>
+  <xacro:property name="arm_mount_y" value="0.0"/>
+  <!-- Cara superior del chasis: el box de base_link va de -0.02 a base_height-0.02. -->
+  <xacro:property name="arm_mount_z" value="${base_height - 0.02}"/>
+  <!-- Límites articulares provisionales (rad). TBD con los topes mecánicos. -->
+  <xacro:property name="arm_q1_min" value="${-pi}"/>
+  <xacro:property name="arm_q1_max" value="${pi}"/>
+  <xacro:property name="arm_q2_min" value="${-pi/2}"/>
+  <xacro:property name="arm_q2_max" value="${pi/2}"/>
+  <xacro:property name="arm_q3_min" value="${-2.5}"/>
+  <xacro:property name="arm_q3_max" value="${2.5}"/>
+  <xacro:property name="arm_q4_min" value="${-2.5}"/>
+  <xacro:property name="arm_q4_max" value="${2.5}"/>
+  <xacro:property name="arm_effort" value="11.0"/>           <!-- N·m pico GIM6010-8 -->
+  <xacro:property name="arm_velocity" value="3.0"/>          <!-- rad/s, TBD -->
+  <xacro:property name="arm_link_radius" value="0.025"/>
+
+  <!-- ===================== Gripper (servo PWM) ===================== -->
+  <xacro:property name="gripper_finger_travel" value="0.035"/>   <!-- m por dedo, TBD -->
+  <xacro:property name="gripper_finger_length" value="0.06"/>
+
+  <!-- ===================== Cámara eye-in-hand (RealSense D435i) ===================== -->
+  <!-- Pose provisional de camera_link respecto a arm_link_4; la real sale de la
+       calibración hand-eye (AMR_perception/scripts/handeye_calib.py). -->
+  <xacro:property name="camera_x" value="0.0"/>
+  <xacro:property name="camera_y" value="0.05"/>
+  <xacro:property name="camera_z" value="0.0"/>
+
+  <!-- ===================== Bandeja de carga ===================== -->
+  <xacro:property name="tray_x" value="-0.12"/>              <!-- TBD -->
+  <xacro:property name="tray_z" value="${base_height - 0.02 + 0.005}"/>
+</robot>

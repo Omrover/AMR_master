@@ -1,0 +1,15 @@
+# Comando de bajo nivel para el brazo, atendido por amr_mqtt_bridge.
+# El bridge convierte rad -> counts con arm.yaml y espera el ack del MCU.
+uint8 GOAL = 0
+uint8 ENABLE = 1
+uint8 DISABLE = 2
+uint8 CLEAR_FAULTS = 3
+uint8 HOME = 4
+
+uint8 op
+float64[] positions         # rad, una por junta (solo GOAL)
+float64[] accelerations     # rad/s^2 del perfil trapezoidal por junta (solo GOAL)
+---
+bool accepted
+uint32 seq
+string message

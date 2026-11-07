@@ -1,0 +1,14 @@
+# Secuencia pregrasp -> descend -> grasp -> lift (fuente: pose o la bandeja del robot).
+uint8 FROM_POSE = 0
+uint8 FROM_TRAY = 1
+
+uint8 source
+geometry_msgs/PoseStamped object_pose
+string object_class
+---
+bool success
+int32 error_code
+string message
+---
+string stage
+float32 progress

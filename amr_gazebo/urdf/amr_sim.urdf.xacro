@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!--
+  Robot para Gazebo Harmonic: misma URDF que el robot real + sensores y plugins.
+    xacro amr_sim.urdf.xacro optical_frames:=true
+-->
+<robot name="omrover_mm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find amr_description)/urdf/amr.urdf.xacro"/>
+  <xacro:include filename="$(find amr_gazebo)/urdf/amr.gazebo.xacro"/>
+</robot>

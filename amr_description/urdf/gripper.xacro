@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+  Gripper paralelo de dos dedos accionado por un servo PWM (control en el MCU).
+  Se modela como un joint prismático con mimic; la posición publicada en
+  /joint_states sale de grip.pos del contrato (0 abierto -> travel, 1 cerrado -> 0).
+  Los dedos cierran a lo largo de z de tool0 (normal al plano del brazo).
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="gripper_finger" params="side sign">
+    <link name="gripper_finger_${side}_link">
+      <visual>
+        <origin xyz="${gripper_finger_length / 2} 0 0" rpy="0 0 0"/>
+        <geometry><box size="${gripper_finger_length} 0.02 0.008"/></geometry>
+        <material name="omr_dark"/>
+      </visual>
+      <collision>
+        <origin xyz="${gripper_finger_length / 2} 0 0" rpy="0 0 0"/>
+        <geometry><box size="${gripper_finger_length} 0.02 0.008"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.02"/>
+        <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="servo_gripper" params="parent">
+    <joint name="gripper_base_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="gripper_base_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+    <link name="gripper_base_link">
+      <visual>
+        <origin xyz="0.01 0 0" rpy="0 0 0"/>
+        <geometry><box size="0.02 0.04 ${2 * gripper_finger_travel + 0.03}"/></geometry>
+        <material name="omr_dark"/>
+      </visual>
+    </link>
+
+    <xacro:gripper_finger side="left" sign="1"/>
+    <xacro:gripper_finger side="right" sign="-1"/>
+
+    <joint name="gripper_finger_joint" type="prismatic">
+      <parent link="gripper_base_link"/>
+      <child link="gripper_finger_left_link"/>
+      <origin xyz="0.02 0 0.004" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="0.0" upper="${gripper_finger_travel}" effort="20" velocity="0.1"/>
+    </joint>
+    <joint name="gripper_finger_right_joint" type="prismatic">
+      <parent link="gripper_base_link"/>
+      <child link="gripper_finger_right_link"/>
+      <origin xyz="0.02 0 -0.004" rpy="0 0 0"/>
+      <axis xyz="0 0 -1"/>
+      <limit lower="0.0" upper="${gripper_finger_travel}" effort="20" velocity="0.1"/>
+      <xacro:if value="$(arg gripper_mimic)">
+        <mimic joint="gripper_finger_joint" multiplier="1" offset="0"/>
+      </xacro:if>
+    </joint>
+
+    <!-- Punto de agarre entre los dedos -->
+    <joint name="gripper_tcp_joint" type="fixed">
+      <parent link="gripper_base_link"/>
+      <child link="gripper_tcp"/>
+      <origin xyz="${0.02 + gripper_finger_length * 0.75} 0 0" rpy="0 0 0"/>
+    </joint>
+    <link name="gripper_tcp"/>
+  </xacro:macro>
+</robot>

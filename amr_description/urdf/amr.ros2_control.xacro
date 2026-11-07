@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  Bloque ros2_control preparado para la migración a MoveIt 2 (fase posterior).
+  Hoy el brazo se comanda con amr_arm_control -> amr_mqtt_bridge, así que esto
+  solo se activa con use_ros2_control:=true:
+    - ros2_control_hardware:=mock -> mock_components/GenericSystem (MoveIt sin robot)
+    - ros2_control_hardware:=gz   -> gz_ros2_control (Gazebo Harmonic)
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="position_joint_if" params="name">
+    <joint name="${name}">
+      <command_interface name="position"/>
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="arm_ros2_control" params="hardware">
+    <ros2_control name="AmrArmSystem" type="system">
+      <hardware>
+        <xacro:if value="${hardware == 'mock'}">
+          <plugin>mock_components/GenericSystem</plugin>
+        </xacro:if>
+        <xacro:if value="${hardware == 'gz'}">
+          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </xacro:if>
+      </hardware>
+      <xacro:position_joint_if name="arm_joint_1"/>
+      <xacro:position_joint_if name="arm_joint_2"/>
+      <xacro:position_joint_if name="arm_joint_3"/>
+      <xacro:position_joint_if name="arm_joint_4"/>
+      <xacro:position_joint_if name="gripper_finger_joint"/>
+    </ros2_control>
+  </xacro:macro>
+</robot>

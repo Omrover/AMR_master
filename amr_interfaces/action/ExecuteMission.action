@@ -1,0 +1,13 @@
+# Misión completa: recoger piezas en pickup y entregarlas en dropoff.
+string mission_id
+geometry_msgs/PoseStamped pickup_pose
+geometry_msgs/PoseStamped dropoff_pose
+string object_class
+uint32 count
+---
+bool success
+string status                          # "Task Completed" al terminar
+uint32 delivered
+string message
+---
+MissionState state

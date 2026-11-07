@@ -1,0 +1,18 @@
+# Movimiento punto a punto sincronizado del brazo de 4 DOF.
+uint8 NAMED = 0
+uint8 JOINT = 1
+uint8 CARTESIAN = 2
+
+uint8 mode
+string named_pose                      # stow, scan, tray_above, tray, dock_view, ...
+float64[] joint_positions              # rad (JOINT)
+geometry_msgs/PoseStamped target       # CARTESIAN: se usa la posición + approach_pitch
+float64 approach_pitch                 # rad, pitch de la herramienta (-pi/2 = top-down)
+float32 velocity_scale                 # 0..1
+---
+bool success
+int32 error_code                       # 0 ok, 1 IK sin solución, 2 límites, 3 rechazo MCU, 4 timeout, 5 cancelado
+string message
+---
+float64[] current_joints
+float32 progress
