@@ -1,0 +1,8 @@
+# Consigna del gripper (servo PWM). Al cerrar, el MCU se detiene cuando la
+# corriente medida por el ACS712 supera max_current_a y marca "grasped".
+float32 position            # 0 = abierto, 1 = cerrado
+float32 max_current_a
+---
+bool accepted
+uint32 seq
+string message

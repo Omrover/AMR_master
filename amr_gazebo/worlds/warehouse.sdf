@@ -1,0 +1,140 @@
+<?xml version="1.0" ?>
+<!--
+  Nave de 8 x 6 m para el gemelo digital: zona de recogida (mesa con piezas),
+  zona de descarga, estación de carga (dock dummy) y obstáculos para Nav2.
+  Coordenadas en el frame del mundo; el robot aparece en el origen mirando a +x.
+-->
+<sdf version="1.9">
+  <world name="warehouse">
+    <!-- 5 ms: suficiente para la base cinemática y juntas por posición; /clock se
+         publica en cada paso y los nodos Python con use_sim_time lo procesan. -->
+    <physics name="5ms" type="ignored">
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+
+    <gravity>0 0 -9.81</gravity>
+    <scene>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.8 0.8 0.85 1</background>
+      <shadows>false</shadows>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.3 0.2 -0.9</direction>
+    </light>
+
+    <model name="ground">
+      <static>true</static>
+      <link name="link">
+        <collision name="c"><geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry></collision>
+        <visual name="v">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+          <material><ambient>0.55 0.55 0.55 1</ambient><diffuse>0.55 0.55 0.55 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Muros perimetrales (8 x 6 m, centro en (2, 0)) -->
+    <model name="walls">
+      <static>true</static>
+      <pose>2 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="n"><pose>0 3 0.5 0 0 0</pose><geometry><box><size>8 0.1 1</size></box></geometry></collision>
+        <visual name="n"><pose>0 3 0.5 0 0 0</pose><geometry><box><size>8 0.1 1</size></box></geometry></visual>
+        <collision name="s"><pose>0 -3 0.5 0 0 0</pose><geometry><box><size>8 0.1 1</size></box></geometry></collision>
+        <visual name="s"><pose>0 -3 0.5 0 0 0</pose><geometry><box><size>8 0.1 1</size></box></geometry></visual>
+        <collision name="e"><pose>4 0 0.5 0 0 0</pose><geometry><box><size>0.1 6 1</size></box></geometry></collision>
+        <visual name="e"><pose>4 0 0.5 0 0 0</pose><geometry><box><size>0.1 6 1</size></box></geometry></visual>
+        <collision name="w"><pose>-4 0 0.5 0 0 0</pose><geometry><box><size>0.1 6 1</size></box></geometry></collision>
+        <visual name="w"><pose>-4 0 0.5 0 0 0</pose><geometry><box><size>0.1 6 1</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <!-- Zona de recogida: mesa baja (0.20 m) con piezas -->
+    <model name="pickup_table">
+      <static>true</static>
+      <pose>4.6 1.8 0 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><pose>0 0 0.1 0 0 0</pose><geometry><box><size>0.6 0.8 0.2</size></box></geometry></collision>
+        <visual name="v">
+          <pose>0 0 0.1 0 0 0</pose><geometry><box><size>0.6 0.8 0.2</size></box></geometry>
+          <material><ambient>0.6 0.45 0.3 1</ambient><diffuse>0.6 0.45 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="part_red">
+      <pose>4.45 1.7 0.22 0 0 0.3</pose>
+      <link name="link">
+        <inertial><mass>0.05</mass><inertia><ixx>1.3e-5</ixx><iyy>1.3e-5</iyy><izz>1.3e-5</izz></inertia></inertial>
+        <collision name="c"><geometry><box><size>0.04 0.04 0.04</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.04 0.04 0.04</size></box></geometry>
+          <material><ambient>0.9 0.1 0.1 1</ambient><diffuse>0.9 0.1 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="part_blue">
+      <pose>4.55 2.0 0.22 0 0 -0.4</pose>
+      <link name="link">
+        <inertial><mass>0.05</mass><inertia><ixx>1.3e-5</ixx><iyy>1.3e-5</iyy><izz>1.3e-5</izz></inertia></inertial>
+        <collision name="c"><geometry><box><size>0.04 0.04 0.04</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.04 0.04 0.04</size></box></geometry>
+          <material><ambient>0.1 0.2 0.9 1</ambient><diffuse>0.1 0.2 0.9 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Zona de descarga -->
+    <model name="dropoff_table">
+      <static>true</static>
+      <pose>4.6 -1.8 0 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><pose>0 0 0.1 0 0 0</pose><geometry><box><size>0.6 0.8 0.2</size></box></geometry></collision>
+        <visual name="v">
+          <pose>0 0 0.1 0 0 0</pose><geometry><box><size>0.6 0.8 0.2</size></box></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.3 0.6 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Dock dummy (sin contactos de carga): placa contra el muro oeste -->
+    <model name="dock">
+      <static>true</static>
+      <pose>-1.9 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><pose>0 0 0.15 0 0 0</pose><geometry><box><size>0.05 0.5 0.3</size></box></geometry></collision>
+        <visual name="v">
+          <pose>0 0 0.15 0 0 0</pose><geometry><box><size>0.05 0.5 0.3</size></box></geometry>
+          <material><ambient>0.95 0.8 0.1 1</ambient><diffuse>0.95 0.8 0.1 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Obstáculos -->
+    <model name="pillar_1">
+      <static>true</static>
+      <pose>2.0 1.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><pose>0 0 0.5 0 0 0</pose><geometry><cylinder><radius>0.15</radius><length>1</length></cylinder></geometry></collision>
+        <visual name="v"><pose>0 0 0.5 0 0 0</pose><geometry><cylinder><radius>0.15</radius><length>1</length></cylinder></geometry></visual>
+      </link>
+    </model>
+    <model name="crate_1">
+      <static>true</static>
+      <pose>2.5 -1.4 0 0 0 0.5</pose>
+      <link name="link">
+        <collision name="c"><pose>0 0 0.25 0 0 0</pose><geometry><box><size>0.5 0.5 0.5</size></box></geometry></collision>
+        <visual name="v"><pose>0 0 0.25 0 0 0</pose><geometry><box><size>0.5 0.5 0.5</size></box></geometry></visual>
+      </link>
+    </model>
+  </world>
+</sdf>

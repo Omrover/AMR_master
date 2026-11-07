@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+  Mobile Manipulator Omrover: base omni X + brazo 4 DOF + gripper servo + cámara eye-in-hand.
+    xacro amr.urdf.xacro                         # robot real
+    xacro amr.urdf.xacro optical_frames:=true    # simulación (sin driver RealSense)
+-->
+<robot name="omrover_mm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="optical_frames" default="false"/>
+  <xacro:arg name="use_ros2_control" default="false"/>
+  <xacro:arg name="ros2_control_hardware" default="mock"/>
+  <!-- false en Gazebo: DART no soporta mimic; gz_mcu comanda ambos dedos. -->
+  <xacro:arg name="gripper_mimic" default="true"/>
+
+  <xacro:include filename="$(find amr_description)/urdf/params.xacro"/>
+  <xacro:include filename="$(find amr_description)/urdf/macros.xacro"/>
+  <xacro:include filename="$(find amr_description)/urdf/base.xacro"/>
+  <xacro:include filename="$(find amr_description)/urdf/arm.xacro"/>
+  <xacro:include filename="$(find amr_description)/urdf/gripper.xacro"/>
+  <xacro:include filename="$(find amr_description)/urdf/camera.xacro"/>
+  <xacro:include filename="$(find amr_description)/urdf/amr.ros2_control.xacro"/>
+
+  <xacro:omni_base/>
+  <xacro:arm4dof parent="base_link"/>
+  <xacro:servo_gripper parent="tool0"/>
+  <xacro:eye_in_hand_camera parent="arm_link_4" optical_frames="$(arg optical_frames)"/>
+
+  <xacro:if value="$(arg use_ros2_control)">
+    <xacro:arm_ros2_control hardware="$(arg ros2_control_hardware)"/>
+  </xacro:if>
+</robot>

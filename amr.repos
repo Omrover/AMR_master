@@ -1,0 +1,24 @@
+# Workspace del Mobile Manipulator Omrover.
+#   mkdir -p ~/amr_ws/src && cd ~/amr_ws/src
+#   vcs import < AMR_master/amr.repos      (después de clonar AMR_master)
+repositories:
+  AMR_master:
+    type: git
+    url: https://github.com/Omrover/AMR_master.git
+    version: main
+  AMR_LLC:
+    type: git
+    url: https://github.com/Omrover/AMR_LLC.git
+    version: main
+  AMR_localization:
+    type: git
+    url: https://github.com/Omrover/AMR_localization.git
+    version: main
+  Navigation:
+    type: git
+    url: https://github.com/Omrover/Navigation.git
+    version: main
+  AMR_arm:
+    type: git
+    url: https://github.com/Omrover/AMR_arm.git
+    version: main

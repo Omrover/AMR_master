@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!--
+  Base omnidireccional con 4 ruedas omni en configuración X (45 deg).
+  Cada rueda se coloca en (sx*wheel_x, sy*wheel_y) con su eje de giro a lo largo
+  del ángulo de montaje (45 deg + k*90); la dirección de tracción es perpendicular
+  (cinemática en amr_mqtt_bridge/omni.py, L = wheel_center_distance).
+  Numeración física (C:/Users/Ivani/routing): 1 = fl, 2 = rl, 3 = rr, 4 = fr.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="omni_wheel" params="name angle sx sy">
+    <joint name="wheel_${name}_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="wheel_${name}_link"/>
+      <origin xyz="${sx * wheel_x} ${sy * wheel_y} 0"
+              rpy="0 0 ${angle}"/>
+      <!-- Eje radial negativo: posición positiva = la rueda empuja al robot en la
+           dirección tangencial +u_i (misma convención que omni.py y el MCU). -->
+      <axis xyz="-1 0 0"/>
+    </joint>
+    <link name="wheel_${name}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+        <material name="omr_dark"/>
+      </visual>
+      <collision>
+        <!-- Contacto como esfera: evita fricción lateral irreal de un cilindro. -->
+        <geometry><sphere radius="${wheel_radius}"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+        <mass value="${wheel_mass}"/>
+        <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="omni_base">
+    <link name="base_footprint"/>
+
+    <joint name="base_footprint_joint" type="fixed">
+      <parent link="base_footprint"/>
+      <child link="base_link"/>
+      <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="base_link">
+      <visual>
+        <origin xyz="0 0 ${base_height / 2 - 0.02}" rpy="0 0 0"/>
+        <geometry><box size="${base_length} ${base_width} ${base_height}"/></geometry>
+        <material name="omr_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${base_height / 2 - 0.02}" rpy="0 0 0"/>
+        <geometry><box size="${base_length} ${base_width} ${base_height}"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 ${base_height / 2 - 0.02}" rpy="0 0 0"/>
+        <mass value="${base_mass}"/>
+        <xacro:box_inertia m="${base_mass}" x="${base_length}" y="${base_width}" z="${base_height}"/>
+      </inertial>
+    </link>
+
+    <xacro:omni_wheel name="fl" angle="${wheel_angle_fl}" sx="1" sy="1"/>
+    <xacro:omni_wheel name="rl" angle="${wheel_angle_rl}" sx="-1" sy="1"/>
+    <xacro:omni_wheel name="rr" angle="${wheel_angle_rr}" sx="-1" sy="-1"/>
+    <xacro:omni_wheel name="fr" angle="${wheel_angle_fr}" sx="1" sy="-1"/>
+
+    <!-- BNO080 -->
+    <joint name="imu_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="imu_link"/>
+      <origin xyz="${imu_x} ${imu_y} ${imu_z}" rpy="0 0 0"/>
+    </joint>
+    <link name="imu_link"/>
+
+    <!-- RPLIDAR A1M8 -->
+    <joint name="laser_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="laser_link"/>
+      <origin xyz="${lidar_x} ${lidar_y} ${lidar_z}" rpy="0 0 0"/>
+    </joint>
+    <link name="laser_link">
+      <visual>
+        <origin xyz="0 0 -0.02" rpy="0 0 0"/>
+        <geometry><cylinder radius="0.035" length="0.04"/></geometry>
+        <material name="omr_dark"/>
+      </visual>
+    </link>
+
+    <!-- Bandeja donde el brazo deposita la pieza durante el transporte -->
+    <joint name="tray_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="tray_link"/>
+      <origin xyz="${tray_x} 0 ${tray_z}" rpy="0 0 0"/>
+    </joint>
+    <link name="tray_link">
+      <visual>
+        <geometry><box size="0.12 0.16 0.01"/></geometry>
+        <material name="omr_blue"/>
+      </visual>
+    </link>
+  </xacro:macro>
+</robot>

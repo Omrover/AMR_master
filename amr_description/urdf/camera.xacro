@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  Cámara RGB-D eye-in-hand (RealSense D435i) montada en arm_link_4.
+  camera_link sigue la convención REP-103 (x hacia adelante). En el robot real
+  el driver realsense2_camera publica camera_link -> *_optical_frame, por eso los
+  frames ópticos solo se agregan con optical_frames:=true (simulación).
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="eye_in_hand_camera" params="parent optical_frames">
+    <joint name="camera_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="camera_link"/>
+      <origin xyz="${camera_x} ${camera_y} ${camera_z}" rpy="0 0 0"/>
+    </joint>
+    <link name="camera_link">
+      <visual>
+        <origin xyz="-0.0125 0 0" rpy="0 0 0"/>
+        <geometry><box size="0.025 0.090 0.025"/></geometry>
+        <material name="omr_dark"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.0125 0 0" rpy="0 0 0"/>
+        <geometry><box size="0.025 0.090 0.025"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.072"/>
+        <inertia ixx="5e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="5e-5"/>
+      </inertial>
+    </link>
+
+    <xacro:if value="${optical_frames}">
+      <joint name="camera_color_joint" type="fixed">
+        <parent link="camera_link"/>
+        <child link="camera_color_frame"/>
+        <origin xyz="0 0.015 0" rpy="0 0 0"/>
+      </joint>
+      <link name="camera_color_frame"/>
+      <joint name="camera_color_optical_joint" type="fixed">
+        <parent link="camera_color_frame"/>
+        <child link="camera_color_optical_frame"/>
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+      </joint>
+      <link name="camera_color_optical_frame"/>
+      <!-- Depth alineado a color comparte el frame óptico de color. -->
+    </xacro:if>
+  </xacro:macro>
+</robot>

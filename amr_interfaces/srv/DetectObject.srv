@@ -1,0 +1,10 @@
+# Detecta una pieza con la cámara eye-in-hand + NCS1 y devuelve su pose en base_link.
+string target_class
+float32 min_confidence
+float32 timeout_s
+---
+bool success
+string message
+geometry_msgs/PoseStamped pose
+float32 confidence
+vision_msgs/Detection3D detection

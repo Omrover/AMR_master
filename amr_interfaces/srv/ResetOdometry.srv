@@ -1,0 +1,7 @@
+# Reinicia la odometría (EKF) del MCU a la pose indicada en el frame odom.
+float64 x
+float64 y
+float64 yaw
+---
+bool success
+string message
