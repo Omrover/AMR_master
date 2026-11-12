@@ -1,0 +1,16 @@
+# AprilTag 36h11 id 0: cuadrado de 0.14 m (10 cm de cuadro negro + margen blanco)
+# en el plano YZ, normal +x, centrado en el origen. UV explícitas: la textura
+# completa una sola vez; vista desde +x, u crece hacia +y (derecha), sin espejo (una caja o un plano de Gazebo la escalan distinto).
+mtllib tag.mtl
+v 0 -0.07 -0.07
+v 0 0.07 -0.07
+v 0 0.07 0.07
+v 0 -0.07 0.07
+vt 0 0
+vt 1 0
+vt 1 1
+vt 0 1
+vn 1 0 0
+usemtl tag
+f 1/1/1 2/2/1 3/3/1
+f 1/1/1 3/3/1 4/4/1

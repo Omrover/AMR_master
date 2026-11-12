@@ -1,26 +1,24 @@
 <?xml version="1.0"?>
 <!--
-  Base omnidireccional con 4 ruedas omni en configuración X (45 deg).
-  Cada rueda se coloca en (sx*wheel_x, sy*wheel_y) con su eje de giro a lo largo
-  del ángulo de montaje (45 deg + k*90); la dirección de tracción es perpendicular
-  (cinemática en amr_mqtt_bridge/omni.py, L = wheel_center_distance).
+  Base holonómica con 4 ruedas mecanum rectas (rodillos a 45 deg en X vistos
+  desde arriba). Cada rueda va en (sx*wheel_x, sy*wheel_y) con su eje de giro en y
+  (cinemática en amr_mqtt_bridge/omni.py MecanumKinematics y amr_odom/omni.c).
   Numeración física (C:/Users/Ivani/routing): 1 = fl, 2 = rl, 3 = rr, 4 = fr.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="omni_wheel" params="name angle sx sy">
+  <xacro:macro name="mecanum_wheel" params="name sx sy">
     <joint name="wheel_${name}_joint" type="continuous">
       <parent link="base_link"/>
       <child link="wheel_${name}_link"/>
-      <origin xyz="${sx * wheel_x} ${sy * wheel_y} 0"
-              rpy="0 0 ${angle}"/>
-      <!-- Eje radial negativo: posición positiva = la rueda empuja al robot en la
-           dirección tangencial +u_i (misma convención que omni.py y el MCU). -->
-      <axis xyz="-1 0 0"/>
+      <origin xyz="${sx * wheel_x} ${sy * wheel_y} 0" rpy="0 0 0"/>
+      <!-- Giro positivo en +y = la rueda rueda hacia +x (misma convención que
+           omni.py y el MCU). -->
+      <axis xyz="0 1 0"/>
     </joint>
     <link name="wheel_${name}_link">
       <visual>
-        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
         <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
         <material name="omr_dark"/>
       </visual>
@@ -29,7 +27,7 @@
         <geometry><sphere radius="${wheel_radius}"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
         <mass value="${wheel_mass}"/>
         <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
       </inertial>
@@ -62,10 +60,10 @@
       </inertial>
     </link>
 
-    <xacro:omni_wheel name="fl" angle="${wheel_angle_fl}" sx="1" sy="1"/>
-    <xacro:omni_wheel name="rl" angle="${wheel_angle_rl}" sx="-1" sy="1"/>
-    <xacro:omni_wheel name="rr" angle="${wheel_angle_rr}" sx="-1" sy="-1"/>
-    <xacro:omni_wheel name="fr" angle="${wheel_angle_fr}" sx="1" sy="-1"/>
+    <xacro:mecanum_wheel name="fl" sx="1" sy="1"/>
+    <xacro:mecanum_wheel name="rl" sx="-1" sy="1"/>
+    <xacro:mecanum_wheel name="rr" sx="-1" sy="-1"/>
+    <xacro:mecanum_wheel name="fr" sx="1" sy="-1"/>
 
     <!-- BNO080 -->
     <joint name="imu_joint" type="fixed">

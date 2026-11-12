@@ -106,18 +106,13 @@
       </link>
     </model>
 
-    <!-- Dock dummy (sin contactos de carga): placa contra el muro oeste -->
-    <model name="dock">
-      <static>true</static>
+    <!-- Dock dummy (sin contactos de carga): panel con AprilTag contra el muro
+         oeste, mirando a +x. Pose de acople del robot: (-1.595, 0, pi). -->
+    <include>
+      <uri>model://omr_dock</uri>
+      <name>dock</name>
       <pose>-1.9 0 0 0 0 0</pose>
-      <link name="link">
-        <collision name="c"><pose>0 0 0.15 0 0 0</pose><geometry><box><size>0.05 0.5 0.3</size></box></geometry></collision>
-        <visual name="v">
-          <pose>0 0 0.15 0 0 0</pose><geometry><box><size>0.05 0.5 0.3</size></box></geometry>
-          <material><ambient>0.95 0.8 0.1 1</ambient><diffuse>0.95 0.8 0.1 1</diffuse></material>
-        </visual>
-      </link>
-    </model>
+    </include>
 
     <!-- Obstáculos -->
     <model name="pillar_1">

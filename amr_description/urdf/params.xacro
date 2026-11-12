@@ -11,22 +11,14 @@
   <xacro:property name="base_width" value="0.40"/>           <!-- TBD -->
   <xacro:property name="base_height" value="0.12"/>          <!-- TBD -->
   <xacro:property name="base_mass" value="12.0"/>            <!-- TBD -->
-  <xacro:property name="wheel_radius" value="0.0762"/>       <!-- rueda omni de 6" -->
+  <xacro:property name="wheel_radius" value="0.0762"/>       <!-- rueda mecanum de 6" -->
   <xacro:property name="wheel_width" value="0.040"/>         <!-- TBD -->
   <xacro:property name="wheel_mass" value="0.40"/>           <!-- TBD -->
   <!-- Centro de cada rueda en (+-wheel_x, +-wheel_y) respecto al centro del robot. -->
   <xacro:property name="wheel_x" value="0.1583"/>
   <xacro:property name="wheel_y" value="0.1734"/>
-  <!-- Brazo de palanca de wz en la cinemática (ruedas a 45 deg con tracción
-       tangencial): L = wheel_x cos45 + wheel_y sin45 = 0.2345 m. Debe coincidir
-       con center_distance del firmware (amr_drive), gz_mcu y mcu_emulator. -->
-  <xacro:property name="wheel_center_distance" value="${(wheel_x + wheel_y) / sqrt(2)}"/>
-  <!-- Ángulo de cada rueda alrededor del centro (X config). Debe coincidir con
-       AMR_LLC/ros2/amr_mqtt_bridge/config/bridge.yaml (wheel_angles_deg). -->
-  <xacro:property name="wheel_angle_fl" value="${radians(45)}"/>
-  <xacro:property name="wheel_angle_rl" value="${radians(135)}"/>
-  <xacro:property name="wheel_angle_rr" value="${radians(225)}"/>
-  <xacro:property name="wheel_angle_fr" value="${radians(315)}"/>
+  <!-- Deben coincidir con half_length/half_width del firmware (amr_drive),
+       gz_mcu y mcu_emulator. Brazo de palanca de wz: wheel_x + wheel_y. -->
 
   <!-- ===================== Sensores ===================== -->
   <!-- RPLIDAR A1M8 -->
@@ -72,8 +64,10 @@
   <!-- ===================== Cámara eye-in-hand (RealSense D435i) ===================== -->
   <!-- Pose provisional de camera_link respecto a arm_link_4; la real sale de la
        calibración hand-eye (AMR_perception/scripts/handeye_calib.py). -->
-  <xacro:property name="camera_x" value="0.0"/>
-  <xacro:property name="camera_y" value="0.05"/>
+  <!-- A la altura de la base del gripper y 8 cm a un lado: con (0, 0.05) el gripper
+       tapaba medio campo visual y el docking no veía el AprilTag. -->
+  <xacro:property name="camera_x" value="0.05"/>
+  <xacro:property name="camera_y" value="0.08"/>
   <xacro:property name="camera_z" value="0.0"/>
 
   <!-- ===================== Bandeja de carga ===================== -->

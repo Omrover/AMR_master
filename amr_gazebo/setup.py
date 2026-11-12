@@ -1,3 +1,4 @@
+import os
 from glob import glob
 
 from setuptools import find_packages, setup
@@ -16,6 +17,10 @@ setup(
         ('share/' + package_name + '/worlds', glob('worlds/*.sdf')),
         ('share/' + package_name + '/config', glob('config/*.yaml')),
         ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),
+    ] + [
+        # modelos de Gazebo (model://<nombre>), con sus subcarpetas de texturas
+        (os.path.join('share', package_name, os.path.dirname(f)), [f])
+        for f in glob('models/**/*', recursive=True) if os.path.isfile(f)
     ],
     install_requires=['setuptools'],
     zip_safe=True,

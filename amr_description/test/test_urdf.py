@@ -30,13 +30,15 @@ def test_ros2_control_block_optional():
     assert 'mock_components/GenericSystem' in xml
 
 
-def test_wheels_x_configuration():
+def test_wheels_mecanum_layout():
     chain = UrdfChain(process())
-    for name, deg in (('fl', 45), ('rl', 135), ('rr', 225), ('fr', 315)):
+    # Ruedas mecanum rectas en (±Lx, ±Ly) = (±0.1583, ±0.1734) m, eje en y.
+    for name, deg, sx, sy in (('fl', 0, 1, 1), ('rl', 0, -1, 1),
+                              ('rr', 0, -1, -1), ('fr', 0, 1, -1)):
         j = chain.joints[f'wheel_{name}_link']
         assert j['type'] == 'continuous'
-        angle = math.atan2(j['xyz'][1], j['xyz'][0]) % (2 * math.pi)
-        assert angle == pytest.approx(math.radians(deg), abs=1e-9)
+        assert j['xyz'][0] == pytest.approx(sx * 0.1583, abs=1e-9)
+        assert j['xyz'][1] == pytest.approx(sy * 0.1734, abs=1e-9)
         assert j['rpy'][2] == pytest.approx(math.radians(deg), abs=1e-9)
 
 
