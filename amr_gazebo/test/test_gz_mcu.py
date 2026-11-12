@@ -73,7 +73,8 @@ def test_odometry_integrates_measured_twist_and_reset(rig):
     assert data['x'] == pytest.approx(5.0 + 0.5 * math.cos(0.5), abs=0.01)
     assert data['y'] == pytest.approx(1.0 + 0.5 * math.sin(0.5), abs=0.01)
     wheels = p.decode_telemetry('llc/wheels', m.telemetry('llc/wheels'))
-    assert wheels['vel'][0] == pytest.approx(-math.sin(math.pi / 4) * 0.5 / m.kin.r, rel=1e-6)
+    # Mecanum: avance puro, las cuatro ruedas a vx / r.
+    assert wheels['vel'] == pytest.approx([0.5 / m.kin.r] * 4, rel=1e-6)
 
 
 def test_arm_goal_streams_joint_setpoints(rig):

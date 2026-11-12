@@ -218,7 +218,8 @@ class GzMcuNode(Node):
         d('mqtt_port', 18883)
         d('mqtt_prefix', 'omrover/mm01')
         d('wheel_radius', 0.0762)
-        d('center_distance', 0.2345)
+        d('half_length', 0.1583)    # ruedas mecanum en (+-half_length, +-half_width)
+        d('half_width', 0.1734)
         d('battery_volt', 25.0)
         d('drain_v_per_s', 0.002)
         d('recharge_v_per_s', 0.05)
@@ -249,7 +250,8 @@ class GzMcuNode(Node):
             send_cmd_vel=self.send_cmd_vel, send_joint=self.send_joint,
             dock=tuple(dock) if len(dock) == 3 else None,
             recharge_v_per_s=float(g('recharge_v_per_s')),
-            wheel_radius=float(g('wheel_radius')), center_distance=float(g('center_distance')),
+            wheel_radius=float(g('wheel_radius')), half_length=float(g('half_length')),
+            half_width=float(g('half_width')),
             battery_volt=float(g('battery_volt')), drain_v_per_s=float(g('drain_v_per_s')))
         self.create_subscription(Odometry, '/sim/odom', self.mcu.on_odom, 10)
         self.create_subscription(Imu, '/sim/imu', self.mcu.on_imu, qos_profile_sensor_data)
