@@ -4,6 +4,7 @@
     ros2 launch amr_gazebo sim.launch.py gui:=true rviz:=true
 """
 import os
+import shutil
 import tempfile
 
 from launch import LaunchDescription
@@ -19,6 +20,9 @@ from launch_ros.substitutions import FindPackageShare
 import xacro
 from ament_index_python.packages import get_package_share_directory
 
+
+en_vnc = os.environ.get('DISPLAY', ':0') != ':0'
+prefijo_vgl = 'vglrun' if (en_vnc and shutil.which('vglrun')) else ''
 
 def spawn_robot(context):
     share = get_package_share_directory('amr_gazebo')
@@ -58,8 +62,14 @@ def gz_args(context):
     # Directo y sin shell: ros_gz_sim/gz_sim.launch.py lo arranca con "sh -c" y, al
     # detener el launch, el SIGINT le llega a sh y el servidor de Gazebo queda
     # huérfano consumiendo CPU. Si Gazebo termina, se cierra todo el launch.
-    return [ExecuteProcess(cmd=['gz', 'sim'] + args.split(), output='screen',
-                           name='gazebo', on_exit=Shutdown())]
+    acciones = [ExecuteProcess(cmd=['gz', 'sim'] + args.split(), output='screen',
+                               name='gazebo', on_exit=Shutdown())]
+    if not headless:
+        # Separa el proceso de GUI para asignarle recursos de GPU y esta no se cuelgue si el servidor de Gazebo se bloquea.
+        acciones.append(TimerAction(period=2.0, actions=[ExecuteProcess(cmd=['gz', 'gui'], prefix=prefijo_vgl, output='screen',
+                                        name='gazebo_gui', on_exit=Shutdown())]))
+        
+    return acciones
 
 
 def generate_launch_description():
@@ -100,6 +110,16 @@ def generate_launch_description():
                               'battery_volt': ParameterValue(LaunchConfiguration('battery_volt'),
                                                              value_type=float)}]),
         ]),
-        Node(package='rviz2', executable='rviz2', condition=IfCondition(LaunchConfiguration('rviz')),
-             arguments=['-d', PathJoinSubstitution([gazebo_pkg, 'rviz', 'sim.rviz'])]),
+       TimerAction(
+            period=6.0,
+            actions=[
+                Node(
+                    package='rviz2',
+                    executable='rviz2',
+                    prefix=prefijo_vgl,
+                    condition=IfCondition(LaunchConfiguration('rviz')),
+                    arguments=['-d', PathJoinSubstitution([gazebo_pkg, 'rviz', 'sim.rviz'])]
+                )
+            ]
+        ),
     ])
