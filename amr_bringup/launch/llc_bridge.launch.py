@@ -38,13 +38,25 @@ def generate_launch_description():
         DeclareLaunchArgument('mqtt_prefix', default_value='omrover/mm01'),
         DeclareLaunchArgument('optical_frames', default_value='false',
                               description='true si no corre el driver de la RealSense'),
+        DeclareLaunchArgument('require_arm_calibration', default_value='true',
+                              description='Rechaza enable/goal/home hasta llamar a '
+                                          '/arm/calibrate en cada arranque del MCU '
+                                          '(false en emulador y Gazebo)'),
+        DeclareLaunchArgument('arm_calibration_file',
+                              default_value='~/.ros/amr_arm_calibration.yaml',
+                              description='Calibración del brazo persistente (none = no guardar)'),
         mosquitto('amr.conf', 'real'),
         mosquitto('amr_local.conf', 'local'),
         Node(package='amr_mqtt_bridge', executable='bridge', name='amr_mqtt_bridge',
              output='screen',
              parameters=[PathJoinSubstitution([bridge_pkg, 'config', 'bridge.yaml']),
                          PathJoinSubstitution([bridge_pkg, 'config', 'arm.yaml']),
-                         {'mqtt_prefix': LaunchConfiguration('mqtt_prefix')}]),
+                         {'mqtt_prefix': LaunchConfiguration('mqtt_prefix'),
+                          'arm_require_calibration': ParameterValue(
+                              LaunchConfiguration('require_arm_calibration'),
+                              value_type=bool),
+                          'arm_calibration_file': ParameterValue(
+                              LaunchConfiguration('arm_calibration_file'), value_type=str)}]),
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              parameters=[{'robot_description': robot_description}], output='screen'),
     ])

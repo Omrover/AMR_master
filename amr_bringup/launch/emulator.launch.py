@@ -24,6 +24,8 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(PathJoinSubstitution(
                 [FindPackageShare('amr_bringup'), 'launch', 'llc_bridge.launch.py'])),
             launch_arguments={'broker': 'local', 'mqtt_prefix': prefix,
+                              'require_arm_calibration': 'false',
+                              'arm_calibration_file': 'none',
                               'optical_frames': 'true'}.items()),
         # El emulador arranca después del broker.
         TimerAction(period=1.0, actions=[

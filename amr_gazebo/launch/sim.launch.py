@@ -102,6 +102,8 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(PathJoinSubstitution(
                 [FindPackageShare('amr_bringup'), 'launch', 'llc_bridge.launch.py'])),
             launch_arguments={'broker': 'local', 'mqtt_prefix': prefix,
+                              'require_arm_calibration': 'false',
+                              'arm_calibration_file': 'none',
                               'optical_frames': 'true'}.items()),
         TimerAction(period=5.0, actions=[
             Node(package='amr_gazebo', executable='gz_mcu', name='gz_mcu', output='screen',
