@@ -57,7 +57,7 @@
   <xacro:property name="arm_q4_max" value="${2.5}"/>
   <xacro:property name="arm_effort" value="11.0"/>           <!-- N·m pico GIM6010-8 -->
   <xacro:property name="arm_velocity" value="3.0"/>          <!-- rad/s, TBD -->
-  <xacro:property name="arm_link_radius" value="0.09"/>
+  <xacro:property name="arm_link_radius" value="0.045"/>
 
   <!-- ===================== Gripper (servo PWM) ===================== -->
   <xacro:property name="gripper_finger_travel" value="0.035"/>   <!-- m por dedo, TBD -->
