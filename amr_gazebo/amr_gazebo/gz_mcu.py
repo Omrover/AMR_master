@@ -229,7 +229,7 @@ class GzMcuNode(Node):
         d('arm_zero_offset', [0, 0, 0, 0])
         d('arm_sign', [1, 1, 1, 1])
         d('arm_lower', [-math.pi, -math.pi / 2, -2.5, -2.5])
-        d('arm_upper', [math.pi, math.pi / 2, 2.5, 2.5])
+        d('arm_upper', [math.pi, math.pi / 2, 0.1, 2.5])   # q3 <= 0.1: el codo no cruza el eslabón 2
         d('gripper_travel', 0.035)
         # Parámetros de arm.yaml que este nodo no usa (se cargan con /**).
         for name, value in (('arm_joints', ARM_JOINTS), ('arm_default_accel', 2.0),

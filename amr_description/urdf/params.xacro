@@ -50,7 +50,9 @@
   <xacro:property name="arm_q2_min" value="${-pi/2}"/>
   <xacro:property name="arm_q2_max" value="${pi/2}"/>
   <xacro:property name="arm_q3_min" value="${-2.5}"/>
-  <xacro:property name="arm_q3_max" value="${2.5}"/>
+  <!-- q3 <= 0.1: el codo no cruza el eslabón 2 (todo en un plano; con q3 > ~0.15 el
+       tramo l4 lo atraviesa). Igual que arm_upper en amr_mqtt_bridge/config/arm.yaml. -->
+  <xacro:property name="arm_q3_max" value="0.1"/>
   <xacro:property name="arm_q4_min" value="${-2.5}"/>
   <xacro:property name="arm_q4_max" value="${2.5}"/>
   <xacro:property name="arm_effort" value="11.0"/>           <!-- N·m pico GIM6010-8 -->
@@ -66,9 +68,13 @@
        calibración hand-eye (AMR_perception/scripts/handeye_calib.py). -->
   <!-- A la altura de la base del gripper y 8 cm a un lado: con (0, 0.05) el gripper
        tapaba medio campo visual y el docking no veía el AprilTag. -->
+  <!-- camera_z: fuera del plano del brazo (z = eje de las juntas). En el plano,
+       la cámara barría sobre arm_link_2 al cambiar de rama de codo y MoveIt no
+       encontraba camino de stow a ningún pick. 0.065 libra los eslabones (r 0.025)
+       y los dedos (hasta 0.043). TBD con el montaje real del CAD. -->
   <xacro:property name="camera_x" value="0.05"/>
   <xacro:property name="camera_y" value="0.08"/>
-  <xacro:property name="camera_z" value="0.0"/>
+  <xacro:property name="camera_z" value="0.065"/>
 
   <!-- ===================== Bandeja de carga ===================== -->
   <xacro:property name="tray_x" value="-0.12"/>              <!-- TBD -->

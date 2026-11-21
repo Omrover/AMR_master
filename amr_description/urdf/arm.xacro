@@ -31,6 +31,22 @@
     </collision>
   </xacro:macro>
 
+  <!-- Cilindro de (x0, y0) a (x0 + length*cos(angle), y0 + length*sin(angle)) en
+       el plano xy del link: Ry(pi/2) lleva el eje del cilindro a x y Rz lo orienta. -->
+  <xacro:macro name="arm_segment_xy" params="x0 y0 length angle">
+    <visual>
+      <origin xyz="${x0 + length / 2 * cos(angle)} ${y0 + length / 2 * sin(angle)} 0"
+              rpy="0 ${pi/2} ${angle}"/>
+      <geometry><cylinder radius="${arm_link_radius}" length="${length}"/></geometry>
+      <material name="omr_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="${x0 + length / 2 * cos(angle)} ${y0 + length / 2 * sin(angle)} 0"
+              rpy="0 ${pi/2} ${angle}"/>
+      <geometry><cylinder radius="${arm_link_radius}" length="${length}"/></geometry>
+    </collision>
+  </xacro:macro>
+
   <xacro:macro name="arm_inertial" params="mass">
     <inertial>
       <mass value="${mass}"/>
@@ -94,8 +110,15 @@
       <axis xyz="0 0 1"/>
       <limit lower="${arm_q3_min}" upper="${arm_q3_max}" effort="${arm_effort}" velocity="${arm_velocity}"/>
     </joint>
+    <!-- El eslabón 3 real es una L: codo fijo l3 desde la junta 3 y luego l4 hasta
+         la junta 4 (la hipotenusa C solo existe en la tabla DH). En este frame la
+         junta 4 está en (-C, 0); el tramo l4 va en la dirección del eslabón 4
+         con q4 = 0 (theta4 = q4 + pi + phi), o sea con ángulo phi - pi, y el l3
+         queda a pi/2 + phi. -->
     <link name="arm_link_3">
-      <xacro:arm_segment_x length="${-arm_C}"/>
+      <xacro:arm_segment_xy x0="0" y0="0" length="${arm_l3}" angle="${pi/2 + arm_phi}"/>
+      <xacro:arm_segment_xy x0="${arm_l3 * cos(pi/2 + arm_phi)}" y0="${arm_l3 * sin(pi/2 + arm_phi)}"
+                            length="${arm_l4}" angle="${arm_phi - pi}"/>
       <xacro:arm_inertial mass="0.5"/>
     </link>
 
