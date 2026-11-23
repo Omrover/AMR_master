@@ -21,7 +21,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('serial_port', default_value='/dev/rplidar'),
         DeclareLaunchArgument('frame_id', default_value='laser_link'),
-        Node(package='rplidar_ros', executable='rplidar_node', name='rplidar',
+        Node(package='rplidar_ros', executable='rplidar_composition', name='rplidar',
              output='screen',
              parameters=[{
                  'channel_type': 'serial',
