@@ -61,13 +61,17 @@ def main():
     import tty
 
     import rclpy
+    import rclpy.signals
     from geometry_msgs.msg import Twist, TwistStamped
 
     if not sys.stdin.isatty():
         print('amr_teleop necesita una terminal interactiva (no ros2 launch).')
         return 1
 
-    rclpy.init()
+    # Sin el handler de rclpy: Ctrl-C llega como KeyboardInterrupt y el finally
+    # publica cero ANTES de cerrar el contexto (con el handler, el contexto ya
+    # está cerrado y el último publish fallaría).
+    rclpy.init(signal_handler_options=rclpy.signals.SignalHandlerOptions.NO)
     node = rclpy.create_node('amr_teleop')
     p = node.declare_parameter
     rate_hz = p('rate_hz', 20.0).value

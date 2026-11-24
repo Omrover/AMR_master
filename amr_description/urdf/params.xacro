@@ -31,7 +31,8 @@
   <xacro:property name="lidar_x" value="0.3042"/>
   <xacro:property name="lidar_y" value="0.0"/>
   <xacro:property name="lidar_z" value="${0.24936 - wheel_radius}"/>
-  <xacro:property name="lidar_yaw" value="0.0"/>
+  <!-- 2026-11-23: el 0° del A1 apunta a la izquierda del robot (+y). -->
+  <xacro:property name="lidar_yaw" value="${pi/2}"/>
   <!-- BNO080 -->
   <xacro:property name="imu_x" value="0.0"/>                 <!-- TBD -->
   <xacro:property name="imu_y" value="0.0"/>
