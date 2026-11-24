@@ -23,12 +23,15 @@
   <!-- ===================== Sensores ===================== -->
   <!-- RPLIDAR A1M8 -->
   <!-- Medido en el robot (2026-11-23) desde el centro de la base a nivel de piso:
-       x 0.3042, y 0, z 0.24936. base_link está a wheel_radius del piso. El yaw
-       (lado del cable/motor del A1) falta verificar: un objeto al frente del robot
-       debe salir en +x en RViz; si sale atrás, poner rpy="0 0 pi" en laser_joint. -->
+       x 0.3042, y 0, z 0.24936. base_link está a wheel_radius del piso.
+       lidar_yaw: giro del A1 respecto al frente del robot. Verificar con una caja
+       al frente y RViz en base_link: debe salir en +x. Si sale a la izquierda (+y)
+       restar pi/2; a la derecha (-y) sumar pi/2; atrás, pi. El filtro del brazo
+       (scan_self_filter) usa la TF, así que se corrige junto con esto. -->
   <xacro:property name="lidar_x" value="0.3042"/>
   <xacro:property name="lidar_y" value="0.0"/>
   <xacro:property name="lidar_z" value="${0.24936 - wheel_radius}"/>
+  <xacro:property name="lidar_yaw" value="0.0"/>
   <!-- BNO080 -->
   <xacro:property name="imu_x" value="0.0"/>                 <!-- TBD -->
   <xacro:property name="imu_y" value="0.0"/>

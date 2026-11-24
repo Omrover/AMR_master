@@ -12,6 +12,8 @@
   <exec_depend>amr_description</exec_depend>
   <exec_depend>amr_mqtt_bridge</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>rplidar_ros</exec_depend>
   <exec_depend>xacro</exec_depend>
