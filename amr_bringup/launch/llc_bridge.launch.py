@@ -2,6 +2,7 @@
 
     ros2 launch amr_bringup llc_bridge.launch.py                 # broker ya corriendo
     ros2 launch amr_bringup llc_bridge.launch.py broker:=real     # lanza mosquitto amr.conf
+    ros2 launch amr_bringup llc_bridge.launch.py broker:=real cmd_vel_timeout:=0.6  # teleop
 """
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
@@ -45,6 +46,11 @@ def generate_launch_description():
         DeclareLaunchArgument('arm_calibration_file',
                               default_value='~/.ros/amr_arm_calibration.yaml',
                               description='Calibración del brazo persistente (none = no guardar)'),
+        DeclareLaunchArgument('cmd_vel_timeout', default_value='0.2',
+                              description='s que el bridge sostiene el último /cmd_vel. '
+                                          'teleop_twist_keyboard publica una vez por tecla y '
+                                          'el autorepeat tarda ~0.5 s: usar 0.6 con el teleop '
+                                          '(al soltar la tecla frena en <= 0.85 s)'),
         mosquitto('amr.conf', 'real'),
         mosquitto('amr_local.conf', 'local'),
         Node(package='amr_mqtt_bridge', executable='bridge', name='amr_mqtt_bridge',
@@ -56,7 +62,9 @@ def generate_launch_description():
                               LaunchConfiguration('require_arm_calibration'),
                               value_type=bool),
                           'arm_calibration_file': ParameterValue(
-                              LaunchConfiguration('arm_calibration_file'), value_type=str)}]),
+                              LaunchConfiguration('arm_calibration_file'), value_type=str),
+                          'cmd_vel_timeout': ParameterValue(
+                              LaunchConfiguration('cmd_vel_timeout'), value_type=float)}]),
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              parameters=[{'robot_description': robot_description}], output='screen'),
     ])
