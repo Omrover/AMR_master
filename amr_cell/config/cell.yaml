@@ -1,0 +1,16 @@
+# Celda (PLC) por MQTT. Ver CELL_CONTRACT.md; broker y cell_id están por definir
+# con el equipo del PLC.
+cell_client:
+  ros__parameters:
+    broker_host: 127.0.0.1
+    broker_port: 18883
+    username: ''
+    password: ''
+    prefix_root: omrover/cell
+    cell_id: st1
+    robot_id: mm01
+    ack_timeout: 3.0        # s por envío de robot/placed
+    ack_retries: 3          # reenvíos con el mismo seq
+    ready_timeout: 10.0     # s esperando plc/status = ready
+    done_timeout: 60.0      # s totales si la meta pide wait_done y no da timeout_s
+    require_ready: true
