@@ -1,0 +1,2 @@
+Export de SolidWorks (paquete catkin de ROS 1): colcon no debe compilarlo.
+Las mallas que usa el robot están en AMR_master/amr_description/meshes.
