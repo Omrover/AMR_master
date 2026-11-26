@@ -12,6 +12,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LlcStatus.msg"
   "msg/ArmStatus.msg"
   "msg/MissionState.msg"
+  "msg/CellStatus.msg"
   "srv/ArmCommand.srv"
   "srv/SetGripper.srv"
   "srv/ResetOdometry.srv"
@@ -20,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/PickObject.action"
   "action/PlaceObject.action"
   "action/ExecuteMission.action"
+  "action/NotifyCell.action"
   DEPENDENCIES builtin_interfaces std_msgs geometry_msgs vision_msgs
 )
 

@@ -1,146 +1,104 @@
 <?xml version="1.0"?>
 <!--
-  Brazo de 4 DOF generado desde la tabla DH estándar de AMR_arm/README.md:
+  Brazo de 4 DOF con la geometría, las mallas y las masas del CAD (Brazo_4GDL_URDF_v4,
+  AMR_arm/models), pero con la CONVENCIÓN DE JUNTAS de la tabla DH de AMR_arm, que es
+  la que usan la calibración (arm_ref_pose), arm_sign, las poses guardadas y la IK:
 
       DH = [q1       l1   0    pi/2;
             q2       0    l2   0;
             q3-phi   0    -C   0;
-            q4+gamma 0    l5   0];
+            q4+gamma 0    0    0]  + herramienta (tool0) fija en el frame 4
 
-  DH estándar: T_i = Rz(theta_i) Tz(d_i) Tx(a_i) Rx(alpha_i).
-  En URDF el giro va DESPUÉS del origin del joint, así que:
-    - joint_i gira en z sobre el frame (i-1) con origin = parte fija de la fila (i-1)
-      seguida de Rz(offset_i)  ->  xyz="a_{i-1} 0 d_{i-1}" rpy="alpha_{i-1} 0 offset_i".
-      (Válido porque alpha=0 en las filas previas a los joints con offset.)
-    - arm_link_i = frame DH (i-1) ya rotado por theta_i.
-    - tool0 = frame DH 4.
-  Con q=0 la FK coincide con el script MATLAB (test: test/test_arm_fk.py).
+  Respecto al CAD: q_CAD = (q1 - pi, -q2, -q3, q4). Por eso la junta 1 no lleva el
+  yaw de pi del export y las juntas 2 y 3 giran en +z en lugar de -z. Los frames
+  arm_link_i son los link_i del CAD (las mallas van con origen cero).
+  Prueba: test/test_arm_fk.py (URDF == DH + herramienta == export del CAD).
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- Segmento cilíndrico de visualización entre el origen del link y (a, 0, d). -->
-  <xacro:macro name="arm_segment_x" params="length">
-    <visual>
-      <origin xyz="${length / 2} 0 0" rpy="0 ${pi/2} 0"/>
-      <geometry><cylinder radius="${arm_link_radius}" length="${fabs(length)}"/></geometry>
-      <material name="omr_orange"/>
-    </visual>
-    <collision>
-      <origin xyz="${length / 2} 0 0" rpy="0 ${pi/2} 0"/>
-      <geometry><cylinder radius="${arm_link_radius}" length="${fabs(length)}"/></geometry>
-    </collision>
-  </xacro:macro>
-
-  <!-- Cilindro de (x0, y0) a (x0 + length*cos(angle), y0 + length*sin(angle)) en
-       el plano xy del link: Ry(pi/2) lleva el eje del cilindro a x y Rz lo orienta. -->
-  <xacro:macro name="arm_segment_xy" params="x0 y0 length angle">
-    <visual>
-      <origin xyz="${x0 + length / 2 * cos(angle)} ${y0 + length / 2 * sin(angle)} 0"
-              rpy="0 ${pi/2} ${angle}"/>
-      <geometry><cylinder radius="${arm_link_radius}" length="${length}"/></geometry>
-      <material name="omr_orange"/>
-    </visual>
-    <collision>
-      <origin xyz="${x0 + length / 2 * cos(angle)} ${y0 + length / 2 * sin(angle)} 0"
-              rpy="0 ${pi/2} ${angle}"/>
-      <geometry><cylinder radius="${arm_link_radius}" length="${length}"/></geometry>
-    </collision>
-  </xacro:macro>
-
-  <xacro:macro name="arm_inertial" params="mass">
-    <inertial>
-      <mass value="${mass}"/>
-      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
-    </inertial>
+  <xacro:macro name="cad_link" params="name mesh mass com ixx ixy ixz iyy iyz izz material">
+    <link name="${name}">
+      <visual>
+        <geometry><mesh filename="package://amr_description/meshes/arm/${mesh}"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <geometry><mesh filename="package://amr_description/meshes/arm/${mesh}"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="${com}" rpy="0 0 0"/>
+        <mass value="${mass}"/>
+        <inertia ixx="${ixx}" ixy="${ixy}" ixz="${ixz}" iyy="${iyy}" iyz="${iyz}" izz="${izz}"/>
+      </inertial>
+    </link>
   </xacro:macro>
 
   <xacro:macro name="arm4dof" params="parent">
     <joint name="arm_mount_joint" type="fixed">
       <parent link="${parent}"/>
       <child link="arm_base_link"/>
-      <origin xyz="${arm_mount_x} ${arm_mount_y} ${arm_mount_z}" rpy="0 0 0"/>
+      <origin xyz="${arm_mount_x} ${arm_mount_y} ${arm_mount_z}" rpy="0 0 ${arm_mount_yaw}"/>
     </joint>
-    <link name="arm_base_link">
-      <visual>
-        <origin xyz="0 0 0.01" rpy="0 0 0"/>
-        <geometry><cylinder radius="0.045" length="0.02"/></geometry>
-        <material name="omr_dark"/>
-      </visual>
-    </link>
+    <xacro:cad_link name="arm_base_link" mesh="base_link.STL" mass="1.50152"
+                    com="-7.5521E-08 -4.3477E-05 -0.0098237" ixx="0.0010162" ixy="-2.0892E-07"
+                    ixz="-1.0702E-09" iyy="0.00061725" iyz="-6.0501E-07" izz="0.001464"
+                    material="omr_purple"/>
 
-    <!-- Fila 1: theta=q1, d=l1, a=0, alpha=pi/2 -->
     <joint name="arm_joint_1" type="revolute">
       <parent link="arm_base_link"/>
       <child link="arm_link_1"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 ${arm_j1_z}" rpy="0 0 0"/>
       <axis xyz="0 0 1"/>
       <limit lower="${arm_q1_min}" upper="${arm_q1_max}" effort="${arm_effort}" velocity="${arm_velocity}"/>
     </joint>
-    <link name="arm_link_1">
-      <visual>
-        <origin xyz="0 0 ${arm_l1 / 2}" rpy="0 0 0"/>
-        <geometry><cylinder radius="${arm_link_radius * 1.4}" length="${arm_l1}"/></geometry>
-        <material name="omr_orange"/>
-      </visual>
-      <collision>
-        <origin xyz="0 0 ${arm_l1 / 2}" rpy="0 0 0"/>
-        <geometry><cylinder radius="${arm_link_radius * 1.4}" length="${arm_l1}"/></geometry>
-      </collision>
-      <xacro:arm_inertial mass="0.6"/>
-    </link>
+    <xacro:cad_link name="arm_link_1" mesh="link_1.STL" mass="2.5049"
+                    com="4.9779E-05 0.031055 0.047245" ixx="0.00092302" ixy="3.146E-07"
+                    ixz="-1.5328E-07" iyy="0.001348" iyz="8.8915E-05" izz="0.0012243"
+                    material="omr_purple"/>
 
-    <!-- Fila 2: theta=q2, d=0, a=l2, alpha=0 -->
     <joint name="arm_joint_2" type="revolute">
       <parent link="arm_link_1"/>
       <child link="arm_link_2"/>
-      <origin xyz="0 0 ${arm_l1}" rpy="${pi/2} 0 0"/>
+      <origin xyz="0 0 ${arm_j2_z}" rpy="${pi/2} 0 0"/>
       <axis xyz="0 0 1"/>
       <limit lower="${arm_q2_min}" upper="${arm_q2_max}" effort="${arm_effort}" velocity="${arm_velocity}"/>
     </joint>
-    <link name="arm_link_2">
-      <xacro:arm_segment_x length="${arm_l2}"/>
-      <xacro:arm_inertial mass="0.8"/>
-    </link>
+    <xacro:cad_link name="arm_link_2" mesh="link_2.STL" mass="1.77626"
+                    com="0.29187 0.00032531 0.0024531" ixx="0.00055535" ixy="3.6355E-05"
+                    ixz="-4.2667E-05" iyy="0.0045212" iyz="-1.62E-06" izz="0.0047538"
+                    material="omr_purple"/>
 
-    <!-- Fila 3: theta=q3-phi, d=0, a=-C, alpha=0 -->
     <joint name="arm_joint_3" type="revolute">
       <parent link="arm_link_2"/>
       <child link="arm_link_3"/>
-      <origin xyz="${arm_l2} 0 0" rpy="0 0 ${-arm_phi}"/>
+      <origin xyz="${arm_l2} 0 0" rpy="0 0 0"/>
       <axis xyz="0 0 1"/>
       <limit lower="${arm_q3_min}" upper="${arm_q3_max}" effort="${arm_effort}" velocity="${arm_velocity}"/>
     </joint>
-    <!-- El eslabón 3 real es una L: codo fijo l3 desde la junta 3 y luego l4 hasta
-         la junta 4 (la hipotenusa C solo existe en la tabla DH). En este frame la
-         junta 4 está en (-C, 0); el tramo l4 va en la dirección del eslabón 4
-         con q4 = 0 (theta4 = q4 + pi + phi), o sea con ángulo phi - pi, y el l3
-         queda a pi/2 + phi. -->
-    <link name="arm_link_3">
-      <xacro:arm_segment_xy x0="0" y0="0" length="${arm_l3}" angle="${pi/2 + arm_phi}"/>
-      <xacro:arm_segment_xy x0="${arm_l3 * cos(pi/2 + arm_phi)}" y0="${arm_l3 * sin(pi/2 + arm_phi)}"
-                            length="${arm_l4}" angle="${arm_phi - pi}"/>
-      <xacro:arm_inertial mass="0.5"/>
-    </link>
+    <!-- El eslabón 3 es una L: l4 hacia atrás y l3 hacia arriba hasta la junta 4. -->
+    <xacro:cad_link name="arm_link_3" mesh="link_3.STL" mass="2.08282"
+                    com="-0.054945 0.085698 0.017147" ixx="0.0013931" ixy="-1.7006E-05"
+                    ixz="-5.1996E-05" iyy="0.0016214" iyz="-3.9882E-05" izz="0.0025935"
+                    material="omr_purple"/>
 
-    <!-- Fila 4: theta=q4+gamma, d=0, a=l5, alpha=0 -->
     <joint name="arm_joint_4" type="revolute">
       <parent link="arm_link_3"/>
       <child link="arm_link_4"/>
-      <origin xyz="${-arm_C} 0 0" rpy="0 0 ${arm_gamma}"/>
+      <origin xyz="${-arm_l4} ${arm_l3} 0" rpy="0 0 ${-arm_phi}"/>
       <axis xyz="0 0 1"/>
       <limit lower="${arm_q4_min}" upper="${arm_q4_max}" effort="${arm_effort}" velocity="${arm_velocity}"/>
     </joint>
-    <link name="arm_link_4">
-      <xacro:arm_segment_x length="${arm_l5}"/>
-      <xacro:arm_inertial mass="0.3"/>
-    </link>
+    <xacro:cad_link name="arm_link_4" mesh="link_4.STL" mass="0.62066"
+                    com="-0.067295 -0.028547 0.00047163" ixx="0.00012839" ixy="-2.9025E-05"
+                    ixz="-3.8145E-07" iyy="0.00019468" iyz="-1.7305E-07" izz="0.00010871"
+                    material="omr_dark"/>
 
-    <!-- Frame DH 4: TCP de la herramienta. x = dirección de aproximación,
-         z = eje de las juntas 2..4 (normal al plano del brazo). -->
+    <!-- tool0: raíz de los dedos. x = dirección de los dedos (aproximación),
+         z = normal al plano del brazo (eje de las juntas 2..4). -->
     <joint name="tool0_joint" type="fixed">
       <parent link="arm_link_4"/>
       <child link="tool0"/>
-      <origin xyz="${arm_l5} 0 0" rpy="0 0 0"/>
+      <origin xyz="${tool0_x} ${tool0_y} 0" rpy="0 0 ${tool0_yaw}"/>
     </joint>
     <link name="tool0"/>
   </xacro:macro>

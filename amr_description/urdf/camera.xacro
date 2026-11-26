@@ -1,33 +1,41 @@
 <?xml version="1.0"?>
 <!--
-  Cámara RGB-D eye-in-hand (RealSense D435i) montada en arm_link_4.
-  camera_link sigue la convención REP-103 (x hacia adelante). En el robot real
-  el driver realsense2_camera publica camera_link -> *_optical_frame, por eso los
-  frames ópticos solo se agregan con optical_frames:=true (simulación).
+  Cámara RGB-D eye-in-hand (Orbbec DaBai DCW) con el soporte del CAD (link_camera) en
+  arm_link_4. camera_link sigue la convención REP-103 (x = eje óptico hacia adelante);
+  su orientación respecto al soporte es camera_link_rpy (verificar en RViz con la
+  malla; la pose real sale de la calibración hand-eye). En el robot real el driver de
+  la cámara publica camera_link -> *_optical_frame, por eso los frames ópticos solo se
+  agregan con optical_frames:=true (simulación).
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:macro name="eye_in_hand_camera" params="parent optical_frames">
-    <joint name="camera_joint" type="fixed">
+    <joint name="camera_mount_joint" type="fixed">
       <parent link="${parent}"/>
-      <child link="camera_link"/>
-      <origin xyz="${camera_x} ${camera_y} ${camera_z}" rpy="0 0 0"/>
+      <child link="camera_mount_link"/>
+      <origin xyz="${camera_mount_xyz}" rpy="${camera_mount_rpy}"/>
     </joint>
-    <link name="camera_link">
+    <link name="camera_mount_link">
       <visual>
-        <origin xyz="-0.0125 0 0" rpy="0 0 0"/>
-        <geometry><box size="0.025 0.090 0.025"/></geometry>
-        <material name="omr_dark"/>
+        <geometry><mesh filename="package://amr_description/meshes/arm/link_camera.STL"/></geometry>
+        <material name="omr_grey"/>
       </visual>
       <collision>
-        <origin xyz="-0.0125 0 0" rpy="0 0 0"/>
-        <geometry><box size="0.025 0.090 0.025"/></geometry>
+        <geometry><mesh filename="package://amr_description/meshes/arm/link_camera.STL"/></geometry>
       </collision>
       <inertial>
-        <mass value="0.072"/>
-        <inertia ixx="5e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="5e-5"/>
+        <origin xyz="-0.00092624 -0.0022489 -0.0030976" rpy="0 0 0"/>
+        <mass value="0.16648"/>
+        <inertia ixx="1.8767E-05" ixy="0" ixz="-1.2044E-06" iyy="9.3657E-05" iyz="0" izz="9.0238E-05"/>
       </inertial>
     </link>
+
+    <joint name="camera_joint" type="fixed">
+      <parent link="camera_mount_link"/>
+      <child link="camera_link"/>
+      <origin xyz="0 0 0" rpy="${camera_link_rpy}"/>
+    </joint>
+    <link name="camera_link"/>
 
     <xacro:if value="${optical_frames}">
       <joint name="camera_color_joint" type="fixed">

@@ -7,16 +7,22 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- ===================== Base omnidireccional (X a 45 deg) ===================== -->
-  <xacro:property name="base_length" value="0.56"/>          <!-- TBD -->
-  <xacro:property name="base_width" value="0.44"/>           <!-- TBD -->
-  <xacro:property name="base_height" value="0.19"/>          <!-- TBD -->
-  <xacro:property name="base_mass" value="12.0"/>            <!-- TBD -->
+  <!-- Del CAD (AMR_URDF, 2026-11-25): el chasis va de x -0.330 a +0.345 (con la torre
+       del LiDAR), y +-0.222, z 0.036..0.260 desde el piso; cubierta a ~0.20 m.
+       Mallas en meshes/base (origen del CAD = piso = base_footprint). -->
+  <xacro:property name="base_length" value="0.675"/>
+  <xacro:property name="base_width" value="0.444"/>
+  <xacro:property name="base_height" value="0.224"/>
+  <xacro:property name="base_mass" value="9.0"/>
   <xacro:property name="wheel_radius" value="0.0762"/>       <!-- rueda mecanum de 6" -->
-  <xacro:property name="wheel_width" value="0.07"/>         <!-- TBD -->
-  <xacro:property name="wheel_mass" value="0.40"/>           <!-- TBD -->
-  <!-- Centro de cada rueda en (+-wheel_x, +-wheel_y) respecto al centro del robot. -->
-  <xacro:property name="wheel_x" value="0.1583"/>
-  <xacro:property name="wheel_y" value="0.1734"/>
+  <xacro:property name="wheel_width" value="0.063"/>
+  <xacro:property name="wheel_mass" value="1.5"/>
+  <!-- Centro de cada rueda en (+-wheel_x, +-wheel_y) respecto al centro del robot y a
+       wheel_z_cad del piso (CAD). El firmware usa 0.1583/0.1734 (x/y intercambiados);
+       la cinemática mecanum solo usa la suma (0.3325 vs 0.3317), así que no cambia. -->
+  <xacro:property name="wheel_x" value="0.1734"/>
+  <xacro:property name="wheel_y" value="0.15913"/>
+  <xacro:property name="wheel_z_cad" value="0.07574"/>
   <!-- Deben coincidir con half_length/half_width del firmware (amr_drive),
        gz_mcu y mcu_emulator. Brazo de palanca de wz: wheel_x + wheel_y. -->
 
@@ -34,57 +40,66 @@
   <!-- 2026-11-23: el 0° del A1 apunta a la izquierda del robot (+y). -->
   <xacro:property name="lidar_yaw" value="${pi/2}"/>
   <!-- BNO080 -->
-  <xacro:property name="imu_x" value="0.0"/>                 <!-- TBD -->
+  <xacro:property name="imu_x" value="0.0"/>                 <!-- CAD: IMU_joint -->
   <xacro:property name="imu_y" value="0.0"/>
-  <xacro:property name="imu_z" value="0.03"/>
+  <xacro:property name="imu_z" value="${0.18086 - wheel_radius}"/>
 
-  <!-- ===================== Brazo 4 DOF (tabla DH de AMR_arm/README.md) ===================== -->
-  <xacro:property name="arm_l1" value="${0.031 + 0.03885}"/>
+  <!-- ===================== Brazo 4 DOF (CAD Brazo_4GDL_URDF_v4) ===================== -->
+  <!-- Cadena y mallas del CAD (meshes/arm). Las juntas usan la convención de la tabla
+       DH de AMR_arm (la de la calibración, arm_sign y las poses guardadas):
+       q_CAD = (q1 - pi, -q2, -q3, q4). arm_base_link = base_link del CAD (0.0204 m bajo
+       la cara superior de la base del brazo, 0.0675 m sobre su apoyo). -->
+  <xacro:property name="arm_j1_z" value="0.02045"/>          <!-- arm_base_link -> junta 1 -->
+  <xacro:property name="arm_j2_z" value="0.0772"/>           <!-- junta 1 -> hombro -->
+  <xacro:property name="arm_l1" value="${arm_j1_z + arm_j2_z}"/>
   <xacro:property name="arm_l2" value="0.4"/>
   <xacro:property name="arm_l3" value="0.095"/>
-  <xacro:property name="arm_l4" value="0.245"/>
-  <xacro:property name="arm_l5" value="0.050"/>
+  <xacro:property name="arm_l4" value="0.24525"/>
   <xacro:property name="arm_C" value="${sqrt(arm_l3**2 + arm_l4**2)}"/>
   <xacro:property name="arm_phi" value="${acos(arm_l4 / arm_C)}"/>
   <xacro:property name="arm_gamma" value="${pi + arm_phi}"/>
-  <!-- Montaje del brazo sobre la base. TBD -->
+  <!-- tool0 (raíz de los dedos) en arm_link_4 del CAD; x = hacia los dedos. -->
+  <xacro:property name="tool0_x" value="-0.17479"/>
+  <xacro:property name="tool0_y" value="-0.05323"/>
+  <xacro:property name="tool0_yaw" value="-2.772"/>
+  <!-- Montaje del brazo sobre la base: TBD (el URDF del AMR no lo trae). Provisional:
+       base del brazo apoyada en la cubierta (z 0.198 del piso) en x = 0.14. -->
   <xacro:property name="arm_mount_x" value="0.14"/>
   <xacro:property name="arm_mount_y" value="0.0"/>
-  <!-- Cara superior del chasis: el box de base_link va de -0.02 a base_height-0.02. -->
-  <xacro:property name="arm_mount_z" value="${base_height - 0.02}"/>
-  <!-- Límites articulares provisionales (rad). TBD con los topes mecánicos. -->
+  <xacro:property name="arm_mount_z" value="${0.198 + 0.0675 - wheel_radius}"/>
+  <xacro:property name="arm_mount_yaw" value="0.0"/>
+  <!-- Límites (rad) en la convención DH. Del CAD (q2 en [-0.1, 3.49], q3 en [-3.49, 0],
+       q4 en [-1.22, 1.57]) con dos ajustes por el robot real: q2 >= -0.06 (el tope
+       físico está en arm_ref_pose q2 = -0.059) y q3 hasta 0.1 para incluir la pose de
+       calibración (q3 = 0.058). Igual que arm_lower/arm_upper de arm.yaml. -->
   <xacro:property name="arm_q1_min" value="${-pi}"/>
   <xacro:property name="arm_q1_max" value="${pi}"/>
-  <xacro:property name="arm_q2_min" value="${-pi/2}"/>
-  <xacro:property name="arm_q2_max" value="${pi/2}"/>
-  <xacro:property name="arm_q3_min" value="${-2.5}"/>
-  <!-- q3 <= 0.1: el codo no cruza el eslabón 2 (todo en un plano; con q3 > ~0.15 el
-       tramo l4 lo atraviesa). Igual que arm_upper en amr_mqtt_bridge/config/arm.yaml. -->
+  <xacro:property name="arm_q2_min" value="-0.06"/>
+  <xacro:property name="arm_q2_max" value="3.4907"/>
+  <xacro:property name="arm_q3_min" value="-3.4907"/>
   <xacro:property name="arm_q3_max" value="0.1"/>
-  <xacro:property name="arm_q4_min" value="${-2.5}"/>
-  <xacro:property name="arm_q4_max" value="${2.5}"/>
+  <xacro:property name="arm_q4_min" value="-1.2217"/>
+  <xacro:property name="arm_q4_max" value="1.5708"/>
   <xacro:property name="arm_effort" value="11.0"/>           <!-- N·m pico GIM6010-8 -->
   <xacro:property name="arm_velocity" value="3.0"/>          <!-- rad/s, TBD -->
-  <xacro:property name="arm_link_radius" value="0.045"/>
 
-  <!-- ===================== Gripper (servo PWM) ===================== -->
-  <xacro:property name="gripper_finger_travel" value="0.035"/>   <!-- m por dedo, TBD -->
-  <xacro:property name="gripper_finger_length" value="0.06"/>
+  <!-- ===================== Gripper (motor DC + DRV8833) ===================== -->
+  <!-- Dedos del CAD (link_gl / link_gr): con 0 se tocan; abren hasta 0.05 m cada uno.
+       gripper_tcp: punto de agarre a lo largo de los dedos desde su raíz (TBD). -->
+  <xacro:property name="gripper_finger_travel" value="0.05"/>
+  <xacro:property name="gripper_finger_left_z" value="0.030271"/>
+  <xacro:property name="gripper_finger_right_z" value="-0.028681"/>
+  <xacro:property name="gripper_tcp_x" value="0.05"/>
 
-  <!-- ===================== Cámara eye-in-hand (RealSense D435i) ===================== -->
-  <!-- Pose provisional de camera_link respecto a arm_link_4; la real sale de la
-       calibración hand-eye (AMR_perception/scripts/handeye_calib.py). -->
-  <!-- A la altura de la base del gripper y 8 cm a un lado: con (0, 0.05) el gripper
-       tapaba medio campo visual y el docking no veía el AprilTag. -->
-  <!-- camera_z: fuera del plano del brazo (z = eje de las juntas). En el plano,
-       la cámara barría sobre arm_link_2 al cambiar de rama de codo y MoveIt no
-       encontraba camino de stow a ningún pick. 0.065 libra los eslabones (r 0.025)
-       y los dedos (hasta 0.043). TBD con el montaje real del CAD. -->
-  <xacro:property name="camera_x" value="0.05"/>
-  <xacro:property name="camera_y" value="0.08"/>
-  <xacro:property name="camera_z" value="0.065"/>
+  <!-- ===================== Cámara eye-in-hand (Orbbec DaBai DCW) ===================== -->
+  <!-- camera_mount_link = link_camera del CAD en arm_link_4. camera_link (REP-103,
+       x = eje óptico) se supone mirando hacia donde apuntan los dedos (z del CAD):
+       verificar en RViz con la malla; la pose real sale de la calibración hand-eye. -->
+  <xacro:property name="camera_mount_xyz" value="-0.10219 -0.0029905 0.000795"/>
+  <xacro:property name="camera_mount_rpy" value="0.34 -1.5708 0"/>
+  <xacro:property name="camera_link_rpy" value="0 ${-pi/2} 0"/>
 
   <!-- ===================== Bandeja de carga ===================== -->
   <xacro:property name="tray_x" value="-0.12"/>              <!-- TBD -->
-  <xacro:property name="tray_z" value="${base_height - 0.02 + 0.005}"/>
+  <xacro:property name="tray_z" value="${0.198 + 0.005 - wheel_radius}"/>  <!-- sobre la cubierta (CAD) -->
 </robot>

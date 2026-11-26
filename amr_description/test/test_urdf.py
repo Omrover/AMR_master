@@ -13,7 +13,7 @@ REQUIRED_LINKS = {
     'base_footprint', 'base_link', 'imu_link', 'laser_link', 'tray_link',
     'wheel_fl_link', 'wheel_rl_link', 'wheel_rr_link', 'wheel_fr_link',
     'arm_base_link', 'arm_link_1', 'arm_link_2', 'arm_link_3', 'arm_link_4',
-    'tool0', 'gripper_base_link', 'gripper_tcp', 'camera_link',
+    'tool0', 'gripper_base_link', 'gripper_tcp', 'camera_mount_link', 'camera_link',
 }
 
 
@@ -32,13 +32,14 @@ def test_ros2_control_block_optional():
 
 def test_wheels_mecanum_layout():
     chain = UrdfChain(process())
-    # Ruedas mecanum rectas en (±Lx, ±Ly) = (±0.1583, ±0.1734) m, eje en y.
+    # Ruedas mecanum rectas en (±Lx, ±Ly) = (±0.1734, ±0.15913) m (CAD), eje en y.
     for name, deg, sx, sy in (('fl', 0, 1, 1), ('rl', 0, -1, 1),
                               ('rr', 0, -1, -1), ('fr', 0, 1, -1)):
         j = chain.joints[f'wheel_{name}_link']
         assert j['type'] == 'continuous'
-        assert j['xyz'][0] == pytest.approx(sx * 0.1583, abs=1e-9)
-        assert j['xyz'][1] == pytest.approx(sy * 0.1734, abs=1e-9)
+        assert j['xyz'][0] == pytest.approx(sx * 0.1734, abs=1e-9)
+        assert j['xyz'][1] == pytest.approx(sy * 0.15913, abs=1e-9)
+        assert j['axis'] == pytest.approx([0, 1, 0])
         assert j['rpy'][2] == pytest.approx(math.radians(deg), abs=1e-9)
 
 
@@ -56,3 +57,14 @@ def test_check_urdf(tmp_path):
     urdf.write_text(process(optical_frames=True))
     result = subprocess.run(['check_urdf', str(urdf)], capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_meshes_exist():
+    """Toda malla referenciada existe en el paquete."""
+    import re
+    pkg = pathlib.Path(__file__).resolve().parents[1]
+    xml = process()
+    meshes = set(re.findall(r'package://amr_description/([^"]+)', xml))
+    assert meshes, 'sin mallas'
+    missing = [m for m in meshes if not (pkg / m).exists()]
+    assert not missing, missing

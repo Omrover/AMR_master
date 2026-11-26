@@ -7,20 +7,19 @@
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="mecanum_wheel" params="name sx sy">
+  <xacro:macro name="mecanum_wheel" params="name sx sy mesh">
     <joint name="wheel_${name}_joint" type="continuous">
       <parent link="base_link"/>
       <child link="wheel_${name}_link"/>
-      <origin xyz="${sx * wheel_x} ${sy * wheel_y} 0" rpy="0 0 0"/>
+      <origin xyz="${sx * wheel_x} ${sy * wheel_y} ${wheel_z_cad - wheel_radius}" rpy="0 0 0"/>
       <!-- Giro positivo en +y = la rueda rueda hacia +x (misma convención que
            omni.py y el MCU). -->
       <axis xyz="0 1 0"/>
     </joint>
     <link name="wheel_${name}_link">
       <visual>
-        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
-        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
-        <material name="omr_dark"/>
+        <geometry><mesh filename="package://amr_description/meshes/base/${mesh}"/></geometry>
+        <material name="omr_purple"/>
       </visual>
       <collision>
         <!-- Contacto como esfera: evita fricción lateral irreal de un cilindro. -->
@@ -44,26 +43,27 @@
     </joint>
 
     <link name="base_link">
+      <!-- Malla del CAD con origen en el piso (base_footprint). -->
       <visual>
-        <origin xyz="0 0 ${base_height / 2 - 0.02}" rpy="0 0 0"/>
-        <geometry><box size="${base_length} ${base_width} ${base_height}"/></geometry>
-        <material name="omr_grey"/>
+        <origin xyz="0 0 ${-wheel_radius}" rpy="0 0 0"/>
+        <geometry><mesh filename="package://amr_description/meshes/base/base_link.STL"/></geometry>
+        <material name="omr_dark"/>
       </visual>
       <collision>
-        <origin xyz="0 0 ${base_height / 2 - 0.02}" rpy="0 0 0"/>
-        <geometry><box size="${base_length} ${base_width} ${base_height}"/></geometry>
+        <origin xyz="0 0 ${-wheel_radius}" rpy="0 0 0"/>
+        <geometry><mesh filename="package://amr_description/meshes/base/base_link.STL"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 ${base_height / 2 - 0.02}" rpy="0 0 0"/>
+        <origin xyz="0.034634 0 ${0.14648 - wheel_radius}" rpy="0 0 0"/>
         <mass value="${base_mass}"/>
-        <xacro:box_inertia m="${base_mass}" x="${base_length}" y="${base_width}" z="${base_height}"/>
+        <inertia ixx="0.02132" ixy="0" ixz="4.0703E-07" iyy="0.063507" iyz="0" izz="0.07706"/>
       </inertial>
     </link>
 
-    <xacro:mecanum_wheel name="fl" sx="1" sy="1"/>
-    <xacro:mecanum_wheel name="rl" sx="-1" sy="1"/>
-    <xacro:mecanum_wheel name="rr" sx="-1" sy="-1"/>
-    <xacro:mecanum_wheel name="fr" sx="1" sy="-1"/>
+    <xacro:mecanum_wheel name="fl" sx="1" sy="1" mesh="front_left_wheel_link.STL"/>
+    <xacro:mecanum_wheel name="rl" sx="-1" sy="1" mesh="rear_left_wheel_link.STL"/>
+    <xacro:mecanum_wheel name="rr" sx="-1" sy="-1" mesh="rear_right_wheel_link.STL"/>
+    <xacro:mecanum_wheel name="fr" sx="1" sy="-1" mesh="front_right_wheel_link.STL"/>
 
     <!-- BNO080 -->
     <joint name="imu_joint" type="fixed">
@@ -71,7 +71,12 @@
       <child link="imu_link"/>
       <origin xyz="${imu_x} ${imu_y} ${imu_z}" rpy="0 0 0"/>
     </joint>
-    <link name="imu_link"/>
+    <link name="imu_link">
+      <visual>
+        <geometry><mesh filename="package://amr_description/meshes/base/IMU_link.STL"/></geometry>
+        <material name="omr_blue"/>
+      </visual>
+    </link>
 
     <!-- RPLIDAR A1M8 -->
     <joint name="laser_joint" type="fixed">

@@ -1,26 +1,26 @@
 <?xml version="1.0"?>
 <!--
-  Gripper paralelo de dos dedos accionado por un servo PWM (control en el MCU).
-  Se modela como un joint prismático con mimic; la posición publicada en
-  /joint_states sale de grip.pos del contrato (0 abierto -> travel, 1 cerrado -> 0).
-  Los dedos cierran a lo largo de z de tool0 (normal al plano del brazo).
+  Gripper paralelo de dos dedos (motor DC + DRV8833, control de corriente en el MCU)
+  con los dedos del CAD (link_gl / link_gr). gripper_finger_joint es la apertura de
+  cada dedo: 0 = cerrado (los dedos se tocan), gripper_finger_travel = abierto; el
+  bridge la publica desde grip.pos del contrato. Los dedos cierran a lo largo de z de
+  tool0 (normal al plano del brazo): con el gripper horizontal, de lado a lado.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="gripper_finger" params="side sign">
+  <xacro:macro name="gripper_finger" params="side mesh">
     <link name="gripper_finger_${side}_link">
       <visual>
-        <origin xyz="${gripper_finger_length / 2} 0 0" rpy="0 0 0"/>
-        <geometry><box size="${gripper_finger_length} 0.02 0.008"/></geometry>
+        <geometry><mesh filename="package://amr_description/meshes/arm/${mesh}"/></geometry>
         <material name="omr_dark"/>
       </visual>
       <collision>
-        <origin xyz="${gripper_finger_length / 2} 0 0" rpy="0 0 0"/>
-        <geometry><box size="${gripper_finger_length} 0.02 0.008"/></geometry>
+        <geometry><mesh filename="package://amr_description/meshes/arm/${mesh}"/></geometry>
       </collision>
       <inertial>
-        <mass value="0.02"/>
-        <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+        <origin xyz="0.037861 0.0075 0" rpy="0 0 0"/>
+        <mass value="0.023844"/>
+        <inertia ixx="1.2662E-06" ixy="0" ixz="0" iyy="1.1075E-05" iyz="0" izz="1.0696E-05"/>
       </inertial>
     </link>
   </xacro:macro>
@@ -31,29 +31,26 @@
       <child link="gripper_base_link"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
-    <link name="gripper_base_link">
-      <visual>
-        <origin xyz="0.01 0 0" rpy="0 0 0"/>
-        <geometry><box size="0.02 0.04 ${2 * gripper_finger_travel + 0.03}"/></geometry>
-        <material name="omr_dark"/>
-      </visual>
-    </link>
+    <!-- El cuerpo del gripper es parte de la malla de arm_link_4. -->
+    <link name="gripper_base_link"/>
 
-    <xacro:gripper_finger side="left" sign="1"/>
-    <xacro:gripper_finger side="right" sign="-1"/>
+    <xacro:gripper_finger side="left" mesh="link_gl.STL"/>
+    <xacro:gripper_finger side="right" mesh="link_gr.STL"/>
 
+    <!-- Frames de los dedos = link_gl/link_gr del CAD (Rx(pi/2) respecto a tool0).
+         En el CAD el eje es el de cierre; aquí va invertido (positivo = abrir). -->
     <joint name="gripper_finger_joint" type="prismatic">
       <parent link="gripper_base_link"/>
       <child link="gripper_finger_left_link"/>
-      <origin xyz="0.02 0 0.004" rpy="0 0 0"/>
-      <axis xyz="0 0 1"/>
+      <origin xyz="0 0 ${gripper_finger_left_z}" rpy="${pi/2} 0 0"/>
+      <axis xyz="0 1 0"/>
       <limit lower="0.0" upper="${gripper_finger_travel}" effort="20" velocity="0.1"/>
     </joint>
     <joint name="gripper_finger_right_joint" type="prismatic">
       <parent link="gripper_base_link"/>
       <child link="gripper_finger_right_link"/>
-      <origin xyz="0.02 0 -0.004" rpy="0 0 0"/>
-      <axis xyz="0 0 -1"/>
+      <origin xyz="0 0 ${gripper_finger_right_z}" rpy="${pi/2} 0 0"/>
+      <axis xyz="0 -1 0"/>
       <limit lower="0.0" upper="${gripper_finger_travel}" effort="20" velocity="0.1"/>
       <xacro:if value="$(arg gripper_mimic)">
         <mimic joint="gripper_finger_joint" multiplier="1" offset="0"/>
@@ -64,7 +61,7 @@
     <joint name="gripper_tcp_joint" type="fixed">
       <parent link="gripper_base_link"/>
       <child link="gripper_tcp"/>
-      <origin xyz="${0.02 + gripper_finger_length * 0.75} 0 0" rpy="0 0 0"/>
+      <origin xyz="${gripper_tcp_x} 0 0" rpy="0 0 0"/>
     </joint>
     <link name="gripper_tcp"/>
   </xacro:macro>

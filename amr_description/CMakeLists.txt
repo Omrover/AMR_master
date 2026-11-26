@@ -3,7 +3,7 @@ project(amr_description)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY urdf launch rviz
+install(DIRECTORY urdf launch rviz meshes
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
