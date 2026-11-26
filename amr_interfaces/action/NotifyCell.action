@@ -1,0 +1,22 @@
+# Avisa al PLC de la celda que el robot dejó una pieza y espera su ack (y, si
+# wait_done, que el brazo del PLC termine). Contrato: amr_cell/CELL_CONTRACT.md.
+string piece               # clase o id de la pieza (informativo para el PLC)
+bool wait_done             # true: esperar plc/done además del ack
+float32 timeout_s          # total; 0 = el del parámetro done_timeout
+---
+uint8 OK = 0
+uint8 BROKER_DOWN = 1      # sin conexión con el broker de la celda
+uint8 NOT_READY = 2        # el PLC no reportó "ready" a tiempo (offline, busy o fault)
+uint8 ACK_TIMEOUT = 3      # sin ack tras todos los reintentos
+uint8 REJECTED = 4         # el PLC respondió rejected
+uint8 DONE_TIMEOUT = 5
+uint8 DONE_ERROR = 6       # el PLC reportó error al tomar la pieza
+uint8 CANCELED = 7
+
+bool success
+uint8 error_code
+string message
+uint32 seq
+---
+string stage               # waiting_ready | sent | acked | done
+uint8 attempt

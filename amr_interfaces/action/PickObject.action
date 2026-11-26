@@ -1,4 +1,5 @@
-# Secuencia pregrasp -> descend -> grasp -> lift (fuente: pose o la bandeja del robot).
+# Gripper horizontal: pregrasp (antes de la pieza) -> approach -> grasp -> lift
+# (fuente: pose o la bandeja del robot).
 uint8 FROM_POSE = 0
 uint8 FROM_TRAY = 1
 
