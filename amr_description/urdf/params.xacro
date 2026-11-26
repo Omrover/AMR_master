@@ -62,11 +62,14 @@
   <xacro:property name="tool0_x" value="-0.17479"/>
   <xacro:property name="tool0_y" value="-0.05323"/>
   <xacro:property name="tool0_yaw" value="-2.772"/>
-  <!-- Montaje del brazo sobre la base: TBD (el URDF del AMR no lo trae). Provisional:
-       base del brazo apoyada en la cubierta (z 0.198 del piso) en x = 0.14. -->
-  <xacro:property name="arm_mount_x" value="0.14"/>
+  <!-- Montaje del brazo sobre la base (el URDF del AMR no lo trae). El origen del CAD
+       del brazo es la cara inferior de su placa (10 x 16.6 cm); la placa se apoya en el
+       techo del chasis (cara superior de la malla a 0.196 m del piso) y el motor de q1
+       queda dentro del chasis. x/y medidos en el CAD (2026-11-26): eje de q1 a 0.1394 m
+       al frente del centro del robot, centrado a lo ancho. -->
+  <xacro:property name="arm_mount_x" value="0.1394"/>
   <xacro:property name="arm_mount_y" value="0.0"/>
-  <xacro:property name="arm_mount_z" value="${0.198 + 0.0675 - wheel_radius}"/>
+  <xacro:property name="arm_mount_z" value="${0.196 - wheel_radius}"/>
   <xacro:property name="arm_mount_yaw" value="0.0"/>
   <!-- Límites (rad) en la convención DH. Del CAD (q2 en [-0.1, 3.49], q3 en [-3.49, 0],
        q4 en [-1.22, 1.57]) con dos ajustes por el robot real: q2 >= -0.06 (el tope
