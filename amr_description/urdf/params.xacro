@@ -72,8 +72,11 @@
        q4 en [-1.22, 1.57]) con dos ajustes por el robot real: q2 >= -0.06 (el tope
        físico está en arm_ref_pose q2 = -0.059) y q3 hasta 0.1 para incluir la pose de
        calibración (q3 = 0.058). Igual que arm_lower/arm_upper de arm.yaml. -->
-  <xacro:property name="arm_q1_min" value="${-pi}"/>
-  <xacro:property name="arm_q1_max" value="${pi}"/>
+  <!-- q1: el CAD da [-pi, pi] alrededor de SU cero, que es nuestro pi (rest, el brazo
+       doblado hacia atrás): en la convención DH es [0, 2 pi], +-180 grados desde rest.
+       Así rest y los agarres por encima (q1 = pi) quedan a la mitad del recorrido. -->
+  <xacro:property name="arm_q1_min" value="0.0"/>
+  <xacro:property name="arm_q1_max" value="${2*pi}"/>
   <xacro:property name="arm_q2_min" value="-0.06"/>
   <xacro:property name="arm_q2_max" value="3.4907"/>
   <xacro:property name="arm_q3_min" value="-3.4907"/>

@@ -18,6 +18,10 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('mqtt_prefix', default_value='omrover/mm01'),
         DeclareLaunchArgument('emulator', default_value='true'),
+        # Brazo en rest al encender, como el robot real: q = [pi, -0.05, 0.058, 0] con
+        # arm_sign = -1 y zero_offset = 0 (arm.yaml) -> counts = -q * 16384 / (2 pi)
+        DeclareLaunchArgument('arm_init_counts', default_value='-8191,130,-151,0',
+                              description='counts iniciales de las juntas del emulador'),
         DeclareLaunchArgument('rviz', default_value='false'),
         DeclareLaunchArgument('battery_volt', default_value='25.0'),
         IncludeLaunchDescription(
@@ -32,7 +36,9 @@ def generate_launch_description():
             Node(package='amr_mqtt_bridge', executable='mcu_emulator', name='mcu_emulator',
                  output='screen', condition=IfCondition(LaunchConfiguration('emulator')),
                  arguments=['--port', '18883', '--prefix', prefix,
-                            '--battery-volt', LaunchConfiguration('battery_volt')]),
+                            '--battery-volt', LaunchConfiguration('battery_volt'),
+                            # con '=': un valor que empieza con '-' argparse lo toma por opción
+                            ['--arm-init-counts=', LaunchConfiguration('arm_init_counts')]]),
         ]),
         Node(package='rviz2', executable='rviz2', condition=IfCondition(LaunchConfiguration('rviz')),
              arguments=['-d', PathJoinSubstitution(
