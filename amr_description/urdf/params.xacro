@@ -65,9 +65,10 @@
   <!-- Montaje del brazo sobre la base (el URDF del AMR no lo trae). El origen del CAD
        del brazo es la cara inferior de su placa (10 x 16.6 cm); la placa se apoya en el
        techo del chasis (cara superior de la malla a 0.196 m del piso) y el motor de q1
-       queda dentro del chasis. x/y medidos en el CAD (2026-11-26): eje de q1 a 0.1394 m
-       al frente del centro del robot, centrado a lo ancho. -->
-  <xacro:property name="arm_mount_x" value="0.1394"/>
+       queda dentro del chasis. y = 0 del CAD (centrado a lo ancho). x medido en el robot
+       (2026-11-27): eje de q1 a 0.1194 m al frente del centro del robot (el CAD daba
+       0.1394; con ese valor el TCP medido quedaba 2 cm atrás de la TF). -->
+  <xacro:property name="arm_mount_x" value="0.1194"/>
   <xacro:property name="arm_mount_y" value="0.0"/>
   <xacro:property name="arm_mount_z" value="${0.196 - wheel_radius}"/>
   <xacro:property name="arm_mount_yaw" value="0.0"/>
